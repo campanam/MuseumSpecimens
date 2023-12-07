@@ -292,6 +292,6 @@ workflow {
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | profileDamage
 		trimAncientTermini(profileDamage.out.alignment)
 		mergeLibraries(trimAncientTermini.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
-		mergedRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | mergedMarkDuplicates 
+		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates 
 
 }
