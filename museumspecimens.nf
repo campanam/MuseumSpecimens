@@ -257,10 +257,10 @@ process reMarkDuplicates {
 	publishDir  "$params.outdir/04_MergedBAMs", mode: 'copy'
 	
 	input:
-	tuple path(sorted_bam)
+	path(sorted_bam)
 	
 	output:
-	tuple path("${sorted_bam.simpleName}.markdup.bam")
+	path("${sorted_bam.simpleName}.markdup.bam")
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
