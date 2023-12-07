@@ -1,3 +1,6 @@
+picard = "picard " + params.picard_java
+gatk --java-options "' + params.gatk_java + '" '
+
 process prepareRef {
 
 	// Prepare reference sequence for downstream processing
@@ -81,7 +84,7 @@ process trimSEAdapters {
 	tuple val(sample), val(library), path(reads1), val(adapter1), val(adapter2), val(rg)
 	
 	output:
-	tuple val(library), val(sample), path("${library}.fastq.gz"), val(rg)
+	tuple val(sample), val(library), path("${library}.fastq.gz"), val(rg)
 	
 	"""
 	AdapterRemoval --file1 $reads1 --basename $library --adapter1 $adapter1 --adapter2 $adapter2 --gzip --collapse --minlength 30
@@ -90,25 +93,191 @@ process trimSEAdapters {
 
 }
 
+process alignSeqs {
 
-// START HERE with alignSeqs and markDuplicates
+	// Align fastqs against reference sequence
+		
+	input:
+	tuple val(sample), val(library), path(reads1), val(rg)
+	path refseq
+	path "*"
+	
+	output:
+	path("${library}_${refseq.simpleName}.bam"), emit: bam
+	val(sample), emit: sample
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	"""
+	bwa samse -r '${rg}' ${refseq} <(bwa aln -t ${task.cpus} -l 1024 ${refseq} ${reads1}) ${reads1} | samtools fixmate -@ ${samtools_extra_threads} -m - - | samtools sort -@ ${samtools_extra_threads} -o ${pair_id}_${refseq.simpleName}.bam - 
+	"""
+	
+}
 
+process realignIndels {
 
-bwa samse -r RGtag refseq.fa <(bwa aln -t number seqs) seqs | something
+	// GATK RealignerTargetCreator. Index bam with picard.
+		
+	input:
+	path rg_bam
+	val sample
+	path refseq
+	path "*"
+	
+	output:
+	tuple path("${rg_bam.simpleName}.realn.bam"), val(sample)
+	
+	"""
+	$picard BuildBamIndex I=${rg_bam}
+	$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
+	"""
 
+}
 
+process markDuplicates {
 
+	// Mark duplicates using sambamba, samtools or picard
+	
+	publishDir  "$params.outdir/01_OriginalBAMs", mode: 'copy'
+	
+	input:
+	tuple path(sorted_bam), val(sample)
+	
+	output:
+	tuple path("${sorted_bam.simpleName}.markdup.bam"), val(sample)
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	if ( params.markDuplicates == "sambamba" )
+		"""
+		sambamba markdup ${sorted_bam} ${sorted_bam.simpleName}.markdup.bam
+		"""
+	else if ( params.markDuplicates == "samtools" )
+		"""
+		samtools markdup -@ ${samtools_extra_threads} ${sorted_bam} ${sorted_bam.simpleName}.markdup.bam
+		"""
+	else
+		"""
+		$picard MarkDuplicates I=${sorted_bam} O=${sorted_bam.simpleName}.markdup.bam M=${sorted_bam.simpleName}.markdup.txt MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=1000
+		"""
+		
+}
 
+process profileDamage {
 
+	// Profile deamination damage for ancient libraries
+	
+	publishDir "$params.outdir/02_DamageProfiles", mode: 'copy', pattern: "*_damage/*.*"
+	
+	input:
+	tuple path(mrkdupbam), val(sample)
+	
+	output:
+	path "${mrkdupbam.simpleName}_damage/*pdf"
+	path "${mrkdupbam.simpleName}_damage/*txt"
+	path "${mrkdupbam.simpleName}_damage/*log"
+	tuple path(mrkdupbam), val(sample)
+	
+	"""
+	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${params.refseq}
+	"""
 
+}
 
+process trimAncientTermini {
 
+	// Trim a set number of bases from termini of ancient samples using bamUtil trimBam
+	// Could theoretically calculate this from the DamageProfiler output, but a hard cut-off should work well enough
+	
+	publishDir "$params.outdir/03_AncientLibraryTrimmedBAMs", mode: 'copy'
+	
+	input:
+	tuple path(profbam), val(sample)
+	
+	output:
+	tuple path("${profbam.simpleName}.trim.bam"), val(sample)
+	
+	"""
+	bam trimBam $profbam ${profbam.simpleName}.trim.bam ${params.aDNA_trimmed_bases}
+	"""
+	
+}
 
+process mergeLibraries {
 
+	// Merge libraries by their sample IDs using SAMtools merge
+	
+	input:
+	tuple path(bam), val(sample)
+	
+	output:
+	path "${sample}_merged.bam"
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	bams = 0
+	bamlist = ""
+	for (i in bam) {
+		bams++
+		bamlist = bamlist + " " + i
+	}
+	if (bams == 1) // Skip merging single libraries
+		"""
+		ln -s $bamlist ${sample}_merged.bam
+		"""
+	else
+		"""
+		samtools merge -@ ${samtools_extra_threads} -o ${sample}_merged.bam $bamlist
+		"""
+} 
 
+process reRealignIndels {
 
+	// GATK RealignerTargetCreator. Index bam with picard.
+		
+	input:
+	path rg_bam
+	path refseq
+	path "*"
+	
+	output:
+	tuple path("${rg_bam.simpleName}.realn.bam"), path("${rg_bam.simpleName}.realn.bai")
+	
+	"""
+	$picard BuildBamIndex I=${rg_bam}
+	$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
+	"""
 
+}
 
+process reMarkDuplicates {
+
+	// Mark duplicates using sambamba, samtools or picard
+	
+	publishDir  "$params.outdir/04_MergedBAMs", mode: 'copy'
+	
+	input:
+	tuple path(sorted_bam)
+	
+	output:
+	tuple path("${sorted_bam.simpleName}.markdup.bam")
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	if ( params.markDuplicates == "sambamba" )
+		"""
+		sambamba markdup ${sorted_bam} ${sorted_bam.simpleName}.markdup.bam
+		"""
+	else if ( params.markDuplicates == "samtools" )
+		"""
+		samtools markdup -@ ${samtools_extra_threads} ${sorted_bam} ${sorted_bam.simpleName}.markdup.bam
+		"""
+	else
+		"""
+		$picard MarkDuplicates I=${sorted_bam} O=${sorted_bam.simpleName}.markdup.bam M=${sorted_bam.simpleName}.markdup.txt MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=1000
+		"""
+		
+}
 
 workflow {
 	main:
@@ -119,6 +288,9 @@ workflow {
 		trimPEAdapters(pe_read_data)
 		trimSEAdapters(se_read_data)
 		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
-		alignSeqs(read_data, params.refseq, prepareRef.out) | markDuplicates
+		alignSeqs(read_data, params.refseq, prepareRef.out)
+		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | profileDamage | trimAncientTermini
+		mergeLibraries(trimAncientTermini.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
+		mergedRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | mergedMarkDuplicates 
 
 }
