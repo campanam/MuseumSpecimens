@@ -67,7 +67,7 @@ process trimPEAdapters {
 	tuple val(sample), val(library), path(reads1), path(reads2), val(adapter1), val(adapter2), val(rg)
 	
 	output:
-	tuple val(library), val(sample), path("${library}.fastq.gz"), val(rg)
+	tuple val(sample), val(library), path("${library}.fastq.gz"), val(rg)
 	
 	"""
 	AdapterRemoval --file1 $reads1 --file2 $reads2 --basename $library --adapter1 $adapter1 --adapter2 $adapter2 --gzip --collapse --minlength 30
