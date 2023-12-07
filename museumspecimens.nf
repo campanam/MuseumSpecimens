@@ -289,7 +289,7 @@ workflow {
 		trimSEAdapters(se_read_data)
 		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
-		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | profileDamage
+		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
 		trimAncientTermini(profileDamage.out.alignment)
 		mergeLibraries(trimAncientTermini.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates 
