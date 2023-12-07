@@ -109,7 +109,7 @@ process alignSeqs {
 	script:
 	samtools_extra_threads = task.cpus - 1
 	"""
-	bwa samse -r '${rg}' ${refseq} <(bwa aln -t ${task.cpus} -l 1024 ${refseq} ${reads1}) ${reads1} | samtools fixmate -@ ${samtools_extra_threads} -m - - | samtools sort -@ ${samtools_extra_threads} -o ${pair_id}_${refseq.simpleName}.bam - 
+	bwa samse -r '${rg}' ${refseq} <(bwa aln -t ${task.cpus} -l 1024 ${refseq} ${reads1}) ${reads1} | samtools fixmate -@ ${samtools_extra_threads} -m - - | samtools sort -@ ${samtools_extra_threads} -o ${library}_${refseq.simpleName}.bam - 
 	"""
 	
 }
