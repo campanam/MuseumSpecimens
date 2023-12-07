@@ -1,5 +1,5 @@
 picard = "picard " + params.picard_java
-gatk --java-options "' + params.gatk_java + '" '
+gatk = 'gatk --java-options "' + params.gatk_java + '" '
 
 process prepareRef {
 
