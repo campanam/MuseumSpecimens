@@ -266,10 +266,10 @@ process trimAncientTermini {
 	publishDir "$params.outdir/04_AncientLibraryTrimmedBAMs", mode: 'copy'
 	
 	input:
-	tuple path(profbam)
+	path(profbam)
 	
 	output:
-	tuple path("${profbam.simpleName}.trim.bam"), val(sample)
+	path("${profbam.simpleName}.trim.bam")
 	
 	"""
 	bam trimBam $profbam ${profbam.simpleName}.trim.bam ${params.aDNA_trimmed_bases}
