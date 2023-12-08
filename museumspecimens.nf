@@ -175,32 +175,11 @@ process profileDamage {
 	output:
 	path "${mrkdupbam.simpleName}_damage/*pdf"
 	path "${mrkdupbam.simpleName}_damage/*txt"
-	path "${mrkdupbam.simpleName}_damage/*log"
-	tuple path(mrkdupbam), val(sample), emit: alignment
-	
+	path "${mrkdupbam.simpleName}_damage/*log"	
 	"""
 	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${params.refseq}
 	"""
 
-}
-
-process trimAncientTermini {
-
-	// Trim a set number of bases from termini of ancient samples using bamUtil trimBam
-	// Could theoretically calculate this from the DamageProfiler output, but a hard cut-off should work well enough
-	
-	publishDir "$params.outdir/03_AncientLibraryTrimmedBAMs", mode: 'copy'
-	
-	input:
-	tuple path(profbam), val(sample)
-	
-	output:
-	tuple path("${profbam.simpleName}.trim.bam"), val(sample)
-	
-	"""
-	bam trimBam $profbam ${profbam.simpleName}.trim.bam ${params.aDNA_trimmed_bases}
-	"""
-	
 }
 
 process mergeLibraries {
@@ -254,7 +233,7 @@ process reMarkDuplicates {
 
 	// Mark duplicates using sambamba, samtools or picard
 	
-	publishDir  "$params.outdir/04_MergedBAMs", mode: 'copy'
+	publishDir  "$params.outdir/03_MergedBAMs", mode: 'copy'
 	
 	input:
 	path(sorted_bam)
@@ -279,6 +258,25 @@ process reMarkDuplicates {
 		
 }
 
+process trimAncientTermini {
+
+	// Trim a set number of bases from termini of ancient samples using bamUtil trimBam
+	// Could theoretically calculate this from the DamageProfiler output, but a hard cut-off should work well enough
+	
+	publishDir "$params.outdir/04_AncientLibraryTrimmedBAMs", mode: 'copy'
+	
+	input:
+	tuple path(profbam)
+	
+	output:
+	tuple path("${profbam.simpleName}.trim.bam"), val(sample)
+	
+	"""
+	bam trimBam $profbam ${profbam.simpleName}.trim.bam ${params.aDNA_trimmed_bases}
+	"""
+	
+}
+
 workflow {
 	main:
 		prepareRef(params.refseq)
@@ -290,8 +288,7 @@ workflow {
 		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
-		trimAncientTermini(profileDamage.out.alignment)
-		mergeLibraries(trimAncientTermini.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
-		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates 
+		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
+		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini
 
 }
