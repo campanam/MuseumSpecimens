@@ -220,7 +220,7 @@ process reRealignIndels {
 	path "*"
 	
 	output:
-	tuple path("${rg_bam.simpleName}.realn.bam"), path("${rg_bam.simpleName}.realn.bai")
+	path("${rg_bam.simpleName}.realn.bam")
 	
 	"""
 	$picard BuildBamIndex I=${rg_bam}
