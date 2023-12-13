@@ -84,11 +84,10 @@ process trimSEAdapters {
 	tuple val(sample), val(library), path(reads1), val(adapter1), val(adapter2), val(rg)
 	
 	output:
-	tuple val(sample), val(library), path("${library}.fastq.gz"), val(rg)
+	tuple val(sample), val(library), path("${library}.truncated.gz"), val(rg)
 	
 	"""
-	AdapterRemoval --file1 $reads1 --basename $library --adapter1 $adapter1 --adapter2 $adapter2 --gzip --collapse --minlength 30
-	cat ${library}.collapsed.gz ${library}.collapsed.truncated.gz > ${library}.fastq.gz
+	AdapterRemoval --file1 $reads1 --basename $library --adapter1 $adapter1 --adapter2 $adapter2 --gzip --minlength 30
 	"""
 
 }
@@ -277,6 +276,29 @@ process trimAncientTermini {
 	
 }
 
+process calculateStatistics {
+
+	// Calculate alignment statistics, depth, and coverage statistics using SAMtools
+	
+	publishDir "$params.outdir/05_AlignmentStatistics", mode: 'copy'
+	
+	input:
+	path(trimbam)
+	
+	output:
+	path("*.txt")
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	"""
+	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.stats.txt
+	samtools depth -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.depth.txt
+	samtools coverage $trimbam > ${trimbam.simpleName}.coverage.txt
+	"""
+
+}
+	
+
 workflow {
 	main:
 		prepareRef(params.refseq)
@@ -289,6 +311,6 @@ workflow {
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
-		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini
+		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 
 }
