@@ -286,7 +286,7 @@ process calculateStatistics {
 	path(trimbam)
 	
 	output:
-	path("*.txt")
+	path("${trimbam.simpleName}.*.txt")
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
