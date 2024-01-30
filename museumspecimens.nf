@@ -78,7 +78,7 @@ process trimPEAdapters {
 
 process trimSEAdapters {
 
-	// Trim adapters for paired-end libraries using AdapterRemoval 2.3.3
+	// Trim adapters for single-end libraries using AdapterRemoval 2.3.3
 
 	input:
 	tuple val(sample), val(library), path(reads1), val(adapter1), val(adapter2), val(rg)
