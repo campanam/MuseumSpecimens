@@ -342,6 +342,7 @@ process kmerSex {
 	path("${rsample}_kmer.sdry.cov")
 	
 	"""
+	for i in *truncated.gz; do ln -s \${i} \${i%.gz}.fastq.gz; done
 	cat *fastq.gz > ${sample}.fq.gz
 	bbduk.sh in=${sample}.fq.gz ref=${kmers} out=${sample}_kmer.fq k=21
 	bwa mem -M ${refseq} ${sample}_kmer.fq | samtools sort -o ${sample}_kmer.bam - 
