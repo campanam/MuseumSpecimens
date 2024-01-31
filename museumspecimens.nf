@@ -316,9 +316,9 @@ process calculateRxy {
 	script:
 	samtools_extra_threads = task.cpus - 1
 	"""
-	samtools view -q 30  -@ ${samtools_extra_threads} -o ${trimbam.simpleName}.mapQ30.bam $trimbam
+	samtools view -q 30 -@ ${samtools_extra_threads} -o ${trimbam.simpleName}.mapQ30.bam $trimbam
 	samtools coverage ${trimbam.simpleName}.mapQ30.bam > ${trimbam.simpleName}.mapQ30.coverage.txt
-	path("${trimbam.simpleName}.mapQ30.cov	Rscript $rx_script ${trimbam.simpleName}.mapQ30.coverage.txt > ${trimbam.simpleName}.Rxy.txt
+	Rscript $rx_script ${trimbam.simpleName}.mapQ30.coverage.txt > ${trimbam.simpleName}.Rxy.txt
 	"""
 	
 }	
