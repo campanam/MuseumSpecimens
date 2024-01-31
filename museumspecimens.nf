@@ -321,8 +321,35 @@ process calculateRxy {
 	Rscript $rx_script ${trimbam.simpleName}.mapQ30.coverage.txt > ${trimbam.simpleName}.Rxy.txt
 	"""
 	
-}	
+}
 
+process kmerSex {
+
+	// Estimate sex assignment using kmers
+	publishDir "$params.outdir/07_KmerSex", mode: 'copy'
+	
+	input:
+	path(reads)
+	path(kmers)
+	path(refseq)
+	path "*"
+	val(sry)
+	
+	output:
+	path("${reads.simpleName}_kmer.fq.gz")
+	path("${reads.simpleName}_kmer.bam")
+	path("${reads.simpleName}_kmer.cov_out")
+	path("${reads.simpleName}_kmer.sdry.cov")
+	
+	"""
+	bbduk.sh in=${reads} ref=${kmers} out=${reads.simpleName}_kmer.fq k=21
+	bwa mem -M ${refseq} ${reads.simpleName}_kmer.fq | samtools sort -o ${reads.simpleName}_kmer.bam - 
+	samtools index ${reads.simpleName}_kmer.bam
+	samtools coverage ${reads.simpleName}_kmer.bam -o ${reads.simpleName}_kmer.cov_out -m -w 100
+	samtools coverage -r ${sry} ${reads.simpleName}_kmer.bam -o ${reads.simpleName}_kmer.sdry.cov
+	gzip ${reads.simpleName}_kmer.fq
+	"""
+}
 workflow {
 	main:
 		prepareRef(params.refseq)
@@ -337,4 +364,7 @@ workflow {
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		calculateRxy(trimAncientTermini.out, params.rx_script)
+		kmerSex = all_reads.groupTuple(by:0)
+		kmerSex.view()
+		//kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry)
 }
