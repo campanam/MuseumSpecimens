@@ -297,7 +297,31 @@ process calculateStatistics {
 	"""
 
 }
+
+process calculateRxy {
+
+	// Calculate Rxy statistics for each individual
 	
+	publishDir "$params.outdir/06_Rxy", mode: 'copy'
+	
+	input:
+	path(trimbam)
+	path(rx_script)
+	
+	output:
+	path("${trimbam.simpleName}.mapQ30.bam")
+	path("${trimbam.simpleName}.mapQ30.coverage.txt")
+	path("${trimbam.simpleName}.Rxy.txt")
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	"""
+	samtools view -q 30  -@ ${samtools_extra_threads} -o ${trimbam.simpleName}.mapQ30.bam $trimbam
+	samtools coverage ${trimbam.simpleName}.mapQ30.bam > ${trimbam.simpleName}.mapQ30.coverage.txt
+	path("${trimbam.simpleName}.mapQ30.cov	Rscript $rx_script ${trimbam.simpleName}.mapQ30.coverage.txt > ${trimbam.simpleName}.Rxy.txt
+	"""
+	
+}	
 
 workflow {
 	main:
@@ -312,5 +336,5 @@ workflow {
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
-
+		calculateRxy(trimAncientTermini.out, params.rx_script)
 }
