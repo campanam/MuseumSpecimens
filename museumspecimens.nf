@@ -339,7 +339,7 @@ process kmerSex {
 	path("${sample}_kmer.fq.gz")
 	path("${sample}_kmer.bam")
 	path("${sample}_kmer.cov_out")
-	path("${rsample}_kmer.sdry.cov")
+	path("${sample}_kmer.sdry.cov")
 	
 	"""
 	if [ -f *truncated.gz ]; then for i in *truncated.gz; do ln -s \${i} \${i%.gz}.fastq.gz; done; fi
