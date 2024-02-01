@@ -347,8 +347,8 @@ process kmerSex {
 	bbduk.sh in=${sample}.fq.gz ref=${kmers} out=${sample}_kmer.fq k=21
 	bwa mem -M ${refseq} ${sample}_kmer.fq | samtools sort -o ${sample}_kmer.bam - 
 	samtools index ${sample}_kmer.bam
-	samtools coverage ${sample}_kmer.bam -o $sample}_kmer.cov_out -m -w 100
-	samtools coverage -r ${sry} ${sample}_kmer.bam -o ${sample}_kmer.sdry.cov
+	samtools coverage -o ${sample}_kmer.cov_out -m -w 100 ${sample}_kmer.bam
+	samtools coverage -r ${sry} -o ${sample}_kmer.sdry.cov ${sample}_kmer.bam 
 	gzip ${sample}_kmer.fq
 	"""
 }
