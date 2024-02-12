@@ -361,8 +361,8 @@ process blastUnalignedReads {
 	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
 
 	input:
-	finalbam
-	blastdb
+	path finalbam
+	path blastdb
 
 	output:
 	path "${finalbam.simpleName}.fa.gz"
