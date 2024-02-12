@@ -353,6 +353,31 @@ process kmerSex {
 	"""
 }
 
+process blastUnalignedReads {
+
+	// Extract unaligned reads in FASTA format for BLAST analysis
+	// Blast unaligned reads against NT
+
+	input:
+	finalbam
+	blastdb
+
+	output:
+	path "${finalbam.simpleName}.fa.gz"
+	path "${finalbam.simpleName}.xml.gz"
+	path "${finalbam.simpleName}.rma6"
+
+	script:
+	samtools_extra_threads = task.cpus - 1
+	"""
+	samtools fasta -@ ${samtools_extra_threads} -f 4 ${finalbam} > ${finalbam.simpleName}.fa
+	blastn -query ${finalbam.simpleName}.fa -num_threads ${task.cpus} -db $blastdb -outfmt 5 -out >(gzip > ${finalbam.simpleName}.xml.gz)
+	gzip ${finalbam.simpleName}.fa
+	blast2rma -i ${finalbam.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${finalbam.simpleName}.fa.gz -o ${finalbam.simpleName}.rma6
+	"""
+
+}
+
 workflow {
 	main:
 		prepareRef(params.refseq)
@@ -368,4 +393,5 @@ workflow {
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		calculateRxy(trimAncientTermini.out, params.rx_script)
 		kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry)
+		blastUnalignedReads(reMarkDuplicates.out, params.blastdb)
 }
