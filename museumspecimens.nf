@@ -358,6 +358,8 @@ process blastUnalignedReads {
 	// Extract unaligned reads in FASTA format for BLAST analysis
 	// Blast unaligned reads against NT
 
+	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
+
 	input:
 	finalbam
 	blastdb
