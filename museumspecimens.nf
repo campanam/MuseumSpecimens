@@ -363,7 +363,7 @@ process blastUnalignedReads {
 
 	input:
 	path finalbam
-	path blastdb
+	val blastdb
 
 	output:
 	path "${finalbam.simpleName}.fa.gz"
