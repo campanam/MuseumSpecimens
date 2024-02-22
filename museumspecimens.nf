@@ -374,10 +374,10 @@ process blastUnalignedReads {
 	samtools_extra_threads = task.cpus - 1
 	"""
 	samtools fasta -@ ${samtools_extra_threads} -f 4 ${finalbam} > ${finalbam.simpleName}.nonuniq.fa
-	cd-hit-est -c 1 -M 0 -i ${finalbam.simpleName}.nonuniq.fa -o ${finalbam.simpleName}.fa
+	cd-hit-est -c 1 -M 0 -i ${finalbam.simpleName}.nonuniq.fa -T ${task.cpus} -o ${finalbam.simpleName}.fa
 	rm ${finalbam.simpleName}.nonuniq.fa
 	rm *clstr
-	blastn -query ${finalbam.simpleName}.fa -db $blastdb -outfmt 5 -out >(gzip > ${finalbam.simpleName}.xml.gz)
+	blastn -query ${finalbam.simpleName}.fa -db $blastdb -num_threads ${task.cpus} -outfmt 5 -out >(gzip > ${finalbam.simpleName}.xml.gz)
 	gzip ${finalbam.simpleName}.fa
 	blast2rma -i ${finalbam.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${finalbam.simpleName}.fa.gz -o ${finalbam.simpleName}.rma6
 	"""
