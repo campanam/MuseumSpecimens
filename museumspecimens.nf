@@ -418,6 +418,6 @@ workflow {
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		calculateRxy(trimAncientTermini.out, params.rx_script)
 		kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry)
-		extractUnalignedReads(reMarkDuplicates.out, params.blastdb)
+		extractUnalignedReads(reMarkDuplicates.out)
 		blastUnalignedReads(extractUnalignedReads.out, params.blastdb)
 }
