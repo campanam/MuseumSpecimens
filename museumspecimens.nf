@@ -353,22 +353,18 @@ process kmerSex {
 	"""
 }
 
-process blastUnalignedReads {
+process extractUnalignedReads {
 
 	// Extract unaligned reads in FASTA format for BLAST analysis
 	// Remove duplicates using CD-HIT-EST
-	// Blast collapsed unaligned reads against NT
 
 	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
 
 	input:
 	path finalbam
-	val blastdb
 
 	output:
 	path "${finalbam.simpleName}.fa.gz"
-	path "${finalbam.simpleName}.xml.gz"
-	path "${finalbam.simpleName}.rma6"
 
 	script:
 	samtools_extra_threads = task.cpus - 1
@@ -377,9 +373,32 @@ process blastUnalignedReads {
 	cd-hit-est -c 1 -M 0 -i ${finalbam.simpleName}.nonuniq.fa -T ${task.cpus} -o ${finalbam.simpleName}.fa
 	rm ${finalbam.simpleName}.nonuniq.fa
 	rm *clstr
-	blastn -query ${finalbam.simpleName}.fa -db $blastdb -num_threads ${task.cpus} -outfmt 5 -out >(gzip > ${finalbam.simpleName}.xml.gz)
 	gzip ${finalbam.simpleName}.fa
-	blast2rma -i ${finalbam.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${finalbam.simpleName}.fa.gz -o ${finalbam.simpleName}.rma6
+	"""
+
+}
+
+process blastUnalignedReads {
+
+	// Blast collapsed unaligned reads against NT
+
+	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
+
+	input:
+	path uniqreads
+	val blastdb
+
+	output:
+	path "${finalbam.simpleName}.xml.gz"
+	path "${finalbam.simpleName}.rma6"
+
+	script:
+	samtools_extra_threads = task.cpus - 1
+	"""
+	ln -s ${uniqreads} tmp.fa.gz
+	blastn -query <(gunzip tmp.fa.gz) -db $blastdb -num_threads ${task.cpus} -mt_mode 2 -outfmt 5 -out >(gzip > ${finalbam.simpleName}.xml.gz)
+	rm tmp.fa
+	blast2rma -i ${finalbam.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${uniqreads} -o ${finalbam.simpleName}.rma6
 	"""
 
 }
@@ -399,5 +418,6 @@ workflow {
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		calculateRxy(trimAncientTermini.out, params.rx_script)
 		kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry)
-		blastUnalignedReads(reMarkDuplicates.out, params.blastdb)
+		extractUnalignedReads(reMarkDuplicates.out, params.blastdb)
+		blastUnalignedReads(extractUnalignedReads.out, params.blastdb)
 }
