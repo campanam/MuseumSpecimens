@@ -392,15 +392,8 @@ process blastUnalignedReads {
 	path "${uniqreads.simpleName}.xml.gz"
 	path "${uniqreads.simpleName}.rma6"
 
-	script:
-	samtools_extra_threads = task.cpus - 1
 	"""
-	seqtk split -n ${task.cpus} ${uniqreads.simpleName} ${uniqreads}
-	for i in *.fa; do 
-		blastn -query \$i -db $blastdb -outfmt 5 -out >(gzip > \${i/.fa/.xml.gz}) &
-	done
-	wait
-	cat ${uniqreads.simpleName}.*.xml.gz > ${uniqreads.simpleName}.xml.gz
+	blastn -query <(gunzip $uniqreads) -db $blastdb -outfmt 5 -num_threads ${task.cpus} -out >(gzip > ${uniqreads.simpleName}.xml.gz)
 	rm *.fa
 	blast2rma -i ${uniqreads.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${uniqreads} -o ${uniqreads.simpleName}.rma6
 	"""
