@@ -413,8 +413,8 @@ workflow {
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
-		calculateRxy(trimAncientTermini.out, params.rx_script)
-		kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry)
+		if (params.Rxy) { calculateRxy(trimAncientTermini.out, params.rx_script) }
+		if (params.kmerSex) { kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry) }
 		if (params.blast) {
 			extractUnalignedReads(reMarkDuplicates.out)
 			blastUnalignedReads(extractUnalignedReads.out, params.blastdb)
