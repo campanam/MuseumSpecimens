@@ -20,6 +20,7 @@ FILTERGMVER = "0.3.3"
 
 # Script to filter GenMap bed output for inclusion/exclusion of regions using VCFtools
 # ARGV[0] is input GenMap bed, ARGV[1] is cutoff float, ARGV[2] is optional, but 'exclude' converts to exclude BED (from default include)
+# This script has been modified from the RatesTools version by moving gz_file_open and format_splash from denovolib.rb here
 
 #-----------------------------------------------------------------------------------------------
 # From BaitsTools 1.6.8: Campana 2018
