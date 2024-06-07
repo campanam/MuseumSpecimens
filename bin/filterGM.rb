@@ -21,8 +21,22 @@ FILTERGMVER = "0.3.3"
 # Script to filter GenMap bed output for inclusion/exclusion of regions using VCFtools
 # ARGV[0] is input GenMap bed, ARGV[1] is cutoff float, ARGV[2] is optional, but 'exclude' converts to exclude BED (from default include)
 
-require_relative 'denovolib'
-
+#-----------------------------------------------------------------------------------------------
+# From BaitsTools 1.6.8: Campana 2018
+def gz_file_open(file) # Determine whether input file is gzipped or not and set method to open it
+	if file[-3..-1] == ".gz"
+		yield Zlib::GzipReader.open(file)
+	else
+		yield File.open(file)
+	end
+end
+#-----------------------------------------------------------------------------------------
+# From RatesTools 1.2.1: Armstrong & Campana 2023
+def format_splash(cmd, version, cmdline) # Format output for basic script help screens
+	puts "\033[1m#{cmd} #{version}\033[0m"
+	puts "\nUsage: ruby #{cmd}.rb #{cmdline}"
+end
+#-----------------------------------------------------------------------------------------
 if ARGV[0].nil?
 	# If no parameters passed, print help screen
 	format_splash('filterGM', FILTERGMVER, '<in_GenMap.bed[.gz]> <cutoff> [exclude] > <out.bed>')
