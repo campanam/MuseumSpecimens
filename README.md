@@ -20,21 +20,22 @@ After installing [Nextflow](https://www.nextflow.io/) and [Mamba](https://mamba.
 
 ## Configuring the Pipeline  
 The `nextflow.config` file included with this repository contains a `standard` profile for running the pipeline locally. See the Nextflow documentation for assistance in generating a configuration profile for your computing system. The parameters you will need to provide to execute the pipeline are listed in the `params` block. These are:  
+
 `refseq`: Path to the genome reference sequence  
 `outdir`: Path to the output directory  
-`gm_tmpdir`: Path to the temporary directory for GenMap indexing
-`gm_opts`: String of options for GenMap mapping (except threading)
+`gm_tmpdir`: Path to the temporary directory for GenMap indexing  
+`gm_opts`: String of options for GenMap mapping (except threading)  
 `pelibraries`: Path to the CSV detailing paired-end sequencing libraries (See below)  
 `selibraries`: Path to the CSV detailing single-end sequencing libraries (See below)  
 `readDir`: Path to the folder containing the FASTQ reads  
 `picard_java`: String of Java options for Picard  
 `gatk_java`: String of Java options for GATK  
 `java11_options`: String of Java options for Java 11 (needed for DamageProfiler)  
-`markDuplicates`: Choice of "picard", "samtools" or "sambamba" for markDuplicates
+`markDuplicates`: Choice of "picard", "samtools" or "sambamba" for markDuplicates  
 `aDNA_trimmed_bases`: Number of bases to trim from 5' and 3' termini to account for deamination damage  
-`rx`: Run sexing using Rx statistic (True or False)
+`rx`: Run sexing using Rx statistic (True or False)  
 `rx_script`: Path to customized Mittnik et al. 2016 Rx script  
-`kmerSex`: Run sexing using Ymers (True or False)
+`kmerSex`: Run sexing using Ymers (True or False)  
 `kmers`: Path to list of Ymers  
 `sry`: Coordinates of SRY in reference genome if sexing using Ymers  
 `blast`: Run BLAST analysis on unaligned reads (True or False)  
