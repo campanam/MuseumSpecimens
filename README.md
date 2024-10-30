@@ -1,6 +1,5 @@
 # Museum Specimens Processing Pipeline  
 <img align="right" src="roosevelt_lions.jpg" width="200">  
-<img align="left" src="Lion_Project.png" width="200">  
 
 Michael G. Campana, 2023-2024  
 Smithsonian's National Zoo & Conservation Biology Institute  
@@ -8,6 +7,7 @@ Smithsonian's National Zoo & Conservation Biology Institute
 This Nextflow [1] pipeline automates the alignment of Illumina sequencing reads from historic and ancient DNA specimens against a reference genome. Reads are trimmed and merged with AdapterRemoval v2 [2] and aligned with BWA-ALN [3] following [4]. Alignments are processed using SAMtools [5-6] and the Genome Analysis Toolkit [7]. In addition to SAMtools, duplicates can be marked using Picard [8] or Sambamba [9]. DNA damage is profiled using DamageProfiler [10] and read ends are trimmed using BamUtil [11]. Optionally, sexing is performed using Rx [12-13] or Ymer profiling. The pipeline can also automate BLAST [14] analysis of unaligned reads. The pipeline also annotates low-mappability regions in the reference genome using GenMap [15] and filterGM from RatesTools [16] for downstream filtering.  
 
 ## Citation  
+<img align="left" src="Lion_Project.png" width="200">  
 Please cite:
 Armstrong, E.E., Curry, C., Solari, K.A., Patterson, B.D., Parker, L.D., McInerney, N., Helgen, K.M., Packer, C., Petrov, D.A., Hadly, E.A., Maldonado, J.E., Fleischer, R.C., Campana, M.G. In prep. Extant East African lion structure reflects 20th century human impacts.  
 
