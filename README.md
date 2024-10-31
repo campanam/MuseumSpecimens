@@ -8,7 +8,7 @@ This Nextflow [1] pipeline automates the alignment of Illumina sequencing reads 
 
 ## Citation  
 <img align="left" src="Lion_Project.png" width="200">  
-Please cite: Armstrong, E.E., Curry, C., Solari, K.A., Morgan, S.M., Patterson, B.D., Parker, L.D., McInerney, N., Helgen, K.M., Packer, C., Petrov, D.A., Hadly, E.A., Maldonado, J.E., Fleischer, R.C., Campana, M.G. In prep. East African lion genetic structure reflects 20th century human impacts.  
+Please cite: Armstrong, E.E., Curry, C., Solari, K.A., Morgan, S.M., Patterson, B.D., Agwanda, B., Parker, L.D., McInerney, N., Helgen, K.M., Packer, C., Petrov, D.A., Hadly, E.A., Maldonado, J.E., Fleischer, R.C., Campana, M.G. In prep. East African lion genetic structure reflects 20th century human impacts.  
 
 ## License  
 This software is licensed under the Smithsonian Institution [terms of use](https://www.si.edu/termsofuse).  
