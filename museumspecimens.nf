@@ -393,8 +393,7 @@ process blastUnalignedReads {
 	path "${uniqreads.simpleName}.rma6"
 
 	"""
-	blastn -query <(gunzip $uniqreads) -db $blastdb -outfmt 5 -num_threads ${task.cpus} -out >(gzip > ${uniqreads.simpleName}.xml.gz)
-	rm *.fa
+	blastn -query <(gunzip -c $uniqreads) -db $blastdb -outfmt 5 -num_threads ${task.cpus} -out >(gzip > ${uniqreads.simpleName}.xml.gz)
 	blast2rma -i ${uniqreads.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${uniqreads} -o ${uniqreads.simpleName}.rma6
 	"""
 
