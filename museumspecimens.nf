@@ -126,10 +126,17 @@ process realignIndels {
 	output:
 	tuple path("${rg_bam.simpleName}.realn.bam"), val(sample)
 	
-	"""
-	$picard BuildBamIndex I=${rg_bam}
-	$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
-	"""
+	script:
+	if ( params.csi )
+		"""
+		samtools index -c ${rg_bam}
+		$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam --create-output-bam-index false
+		"""
+	else
+		"""
+		$picard BuildBamIndex I=${rg_bam}
+		$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
+		"""
 
 }
 
@@ -221,10 +228,16 @@ process reRealignIndels {
 	output:
 	path("${rg_bam.simpleName}.realn.bam")
 	
-	"""
-	$picard BuildBamIndex I=${rg_bam}
-	$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
-	"""
+	if ( params.csi )
+		"""
+		samtools index -c ${rg_bam}
+		$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam --create-output-bam-index false
+		"""
+	else
+		"""
+		$picard BuildBamIndex I=${rg_bam}
+		$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam
+		"""
 
 }
 
