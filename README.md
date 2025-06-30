@@ -1,7 +1,7 @@
 # Museum Specimens Processing Pipeline  
 <img align="right" src="roosevelt_lions.jpg" width="200">  
 
-Michael G. Campana, 2023-2024  
+Michael G. Campana, 2023-2025  
 Smithsonian's National Zoo & Conservation Biology Institute  
 
 This Nextflow [1] pipeline automates the alignment of Illumina sequencing reads from historic and ancient DNA specimens against a reference genome. Reads are trimmed and merged with AdapterRemoval v2 [2] and aligned with BWA-ALN [3] following [4]. Alignments are processed using SAMtools [5-6] and the Genome Analysis Toolkit [7]. In addition to SAMtools, duplicates can be marked using Picard [8] or Sambamba [9]. DNA damage is profiled using DamageProfiler [10] and read ends are trimmed using BamUtil [11]. Optionally, sexing is performed using Rx [12-13] or Ymer profiling. The pipeline can also automate BLAST [14] analysis of unaligned reads. The pipeline also annotates low-mappability regions in the reference genome using GenMap [15] and filterGM from RatesTools [16] for downstream filtering.  
@@ -39,6 +39,7 @@ The `nextflow.config` file included with this repository contains a `standard` p
 `sry`: Coordinates of SRY in reference genome if sexing using Ymers  
 `blast`: Run BLAST analysis on unaligned reads (True or False)  
 `blastdb`: Path to BLAST database if using blast analysis  
+`csi`: Use CSI BAM index rather than BAI (e.g. when reference chr lengths are > 512 Mb)  
 
 ## Sample CSV Files  
 The pipeline expects two CSV files listing sample and individual library names, read files, and adapter sequences. Should your data only include one type of data (paired-end or single-end), please provide a headered CSV file for the missing data type and enter no data rows.  
@@ -76,3 +77,6 @@ Execute the pipeline using the following command:
 ## Image Credits:  
 Roosevelt Lion Photograph: Smithsonian Institution. 1959. Smithsonian Institution Archives, Record Unit 95, Box 44A, Folder 04, Image No. SIA_000095_B44A_F04_001. https://www.si.edu/object/world-mammals-exhibition-hall-museum-natural-history-lion-habitat-group:siris_arc_402161.  
 Lion Genomics Cartoon: T.W. Campana, 2024. Used with permission of the illustrator.  
+
+## Acknowledgements:  
+Mary Cate Hyde assisted development of the csi option.  
