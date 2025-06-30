@@ -228,6 +228,7 @@ process reRealignIndels {
 	output:
 	path("${rg_bam.simpleName}.realn.bam")
 	
+	script:
 	if ( params.csi )
 		"""
 		samtools index -c ${rg_bam}
