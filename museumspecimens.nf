@@ -177,6 +177,7 @@ process profileDamage {
 	
 	input:
 	tuple path(mrkdupbam), val(sample)
+	path refseq
 	path "*"
 	
 	output:
@@ -184,7 +185,7 @@ process profileDamage {
 	path "${mrkdupbam.simpleName}_damage/*txt"
 	path "${mrkdupbam.simpleName}_damage/*log"	
 	"""
-	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${params.refseq}
+	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${refseq}
 	"""
 
 }
@@ -425,7 +426,7 @@ workflow {
 		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates 
-		profileDamage(markDuplicates.out, prepareRef.out)
+		profileDamage(markDuplicates.out, params.refseq, prepareRef.out)
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		if (params.rx) { calculateRxy(trimAncientTermini.out, params.rx_script) }
