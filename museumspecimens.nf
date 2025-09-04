@@ -177,6 +177,7 @@ process profileDamage {
 	
 	input:
 	tuple path(mrkdupbam), val(sample)
+	path "*"
 	
 	output:
 	path "${mrkdupbam.simpleName}_damage/*pdf"
@@ -423,7 +424,8 @@ workflow {
 		trimSEAdapters(se_read_data)
 		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
-		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates | profileDamage
+		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates 
+		profileDamage(markDuplicates.out, prepareRef.out)
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
 		if (params.rx) { calculateRxy(trimAncientTermini.out, params.rx_script) }
