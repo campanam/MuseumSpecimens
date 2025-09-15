@@ -24,8 +24,8 @@ The `nextflow.config` file included with this repository contains a `standard` p
 `outdir`: Path to the output directory  
 `gm_tmpdir`: Path to the temporary directory for GenMap indexing  
 `gm_opts`: String of options for GenMap mapping (except threading)  
-`pelibraries`: Path to the CSV detailing paired-end sequencing libraries (See below)  
-`selibraries`: Path to the CSV detailing single-end sequencing libraries (See below)  
+`pelibraries`: Path to the CSV detailing paired-end sequencing libraries (See below). Set to "NULL" if there are no paired-end libraries.  
+`selibraries`: Path to the CSV detailing single-end sequencing libraries (See below). Set to "NULL" if there are no paired-end libraries.  
 `readDir`: Path to the folder containing the FASTQ reads  
 `picard_java`: String of Java options for Picard  
 `gatk_java`: String of Java options for GATK  
@@ -42,7 +42,7 @@ The `nextflow.config` file included with this repository contains a `standard` p
 `csi`: Use CSI BAM index rather than BAI (e.g. when reference chr lengths are > 512 Mb)  
 
 ## Sample CSV Files  
-The pipeline expects two CSV files listing sample and individual library names, read files, and adapter sequences. Should your data only include one type of data (paired-end or single-end), please provide a headered CSV file for the missing data type and enter no data rows.  
+The pipeline expects one or two CSV files listing sample and individual library names, read files, and adapter sequences. Should your data only include one type of data (paired-end or single-end), provide the corresponding path to the library CSV for that type of data and set the other parameter to "NULL".  
 
 For paired-end reads, the CSV file requires the following header:  
 `Sample,Library,Read1,Read2,Adapter1,Adapter2`  

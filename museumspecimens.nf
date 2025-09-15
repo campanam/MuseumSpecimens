@@ -419,11 +419,21 @@ workflow {
 	main:
 		prepareRef(params.refseq)
 		genMapIndex(params.refseq, params.gm_tmpdir) | genMapMap
-		pe_read_data = Channel.fromPath(params.pelibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), file(params.readDir + row.Read2), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
-		se_read_data = Channel.fromPath(params.selibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
-		trimPEAdapters(pe_read_data)
-		trimSEAdapters(se_read_data)
-		all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
+		if (params.pelibraries != "NULL") {
+			pe_read_data = Channel.fromPath(params.pelibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), file(params.readDir + row.Read2), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
+			trimPEAdapters(pe_read_data)
+		}
+		if (params.selibraries != "NULL") {
+			se_read_data = Channel.fromPath(params.selibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
+			trimSEAdapters(se_read_data)
+		}
+		if (params.pelibraries != "NULL" && params.selibraries != "NULL") {
+			all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
+		} else if (params.pelibraries == "NULL") {
+			all_reads = trimSEAdaptors.out
+		} else {
+			all_reads = trimPEAdaptors.out
+		}
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates 
 		profileDamage(markDuplicates.out, params.refseq, prepareRef.out)
