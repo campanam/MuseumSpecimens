@@ -418,7 +418,7 @@ process blastUnalignedReads {
 workflow {
 	main:
 		prepareRef(params.refseq)
-		genMapIndex(params.refseq, params.gm_tmpdir) | genMapMap
+		if (params.genmap) { genMapIndex(params.refseq, params.gm_tmpdir) | genMapMap }
 		if (params.pelibraries != "NULL") {
 			pe_read_data = Channel.fromPath(params.pelibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), file(params.readDir + row.Read2), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
 			trimPEAdapters(pe_read_data)

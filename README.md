@@ -22,6 +22,7 @@ The `nextflow.config` file included with this repository contains a `standard` p
 
 `refseq`: Path to the genome reference sequence  
 `outdir`: Path to the output directory  
+`genmap`: Run GenMap on reference sequence (True or False)  
 `gm_tmpdir`: Path to the temporary directory for GenMap indexing  
 `gm_opts`: String of options for GenMap mapping (except threading)  
 `pelibraries`: Path to the CSV detailing paired-end sequencing libraries (See below). Set to "NULL" if there are no paired-end libraries.  
