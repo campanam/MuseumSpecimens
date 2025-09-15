@@ -430,9 +430,9 @@ workflow {
 		if (params.pelibraries != "NULL" && params.selibraries != "NULL") {
 			all_reads = trimPEAdapters.out.mix(trimSEAdapters.out)
 		} else if (params.pelibraries == "NULL") {
-			all_reads = trimSEAdaptors.out
+			all_reads = trimSEAdapters.out
 		} else {
-			all_reads = trimPEAdaptors.out
+			all_reads = trimPEAdapters.out
 		}
 		alignSeqs(all_reads, params.refseq, prepareRef.out)
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates 
