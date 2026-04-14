@@ -62,6 +62,8 @@ process genMapMap {
 process trimPEAdapters {
 
 	// Trim adapters for paired-end libraries using AdapterRemoval 2.3.3
+	
+	publishDir  "$params.outdir/00_TrimmedReads", mode: 'copy', enabled: "$params.keep_trimmed_reads"
 
 	input:
 	tuple val(sample), val(library), path(reads1), path(reads2), val(adapter1), val(adapter2), val(rg)
@@ -79,6 +81,8 @@ process trimPEAdapters {
 process trimSEAdapters {
 
 	// Trim adapters for single-end libraries using AdapterRemoval 2.3.3
+	
+	publishDir  "$params.outdir/00_TrimmedReads", mode: 'copy', enabled: "$params.keep_trimmed_reads"
 
 	input:
 	tuple val(sample), val(library), path(reads1), val(adapter1), val(adapter2), val(rg)

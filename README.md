@@ -1,7 +1,7 @@
 # Museum Specimens Processing Pipeline  
 <img align="right" src="roosevelt_lions.jpg" width="200">  
 
-Michael G. Campana, 2023-2025  
+Michael G. Campana, 2023-2026  
 Smithsonian's National Zoo & Conservation Biology Institute  
 
 This Nextflow [1] pipeline automates the alignment of Illumina sequencing reads from historic and ancient DNA specimens against a reference genome. Reads are trimmed and merged with AdapterRemoval v2 [2] and aligned with BWA-ALN [3] following [4]. Alignments are processed using SAMtools [5-6] and the Genome Analysis Toolkit [7]. In addition to SAMtools, duplicates can be marked using Picard [8] or Sambamba [9]. DNA damage is profiled using DamageProfiler [10] and read ends are trimmed using BamUtil [11]. Optionally, sexing is performed using Rx [12-13] or Ymer profiling. The pipeline can also automate BLAST [14] analysis of unaligned reads. The pipeline also annotates low-mappability regions in the reference genome using GenMap [15] and filterGM from RatesTools [16] for downstream filtering.  
@@ -28,6 +28,7 @@ The `nextflow.config` file included with this repository contains a `standard` p
 `pelibraries`: Path to the CSV detailing paired-end sequencing libraries (See below). Set to "NULL" if there are no paired-end libraries.  
 `selibraries`: Path to the CSV detailing single-end sequencing libraries (See below). Set to "NULL" if there are no paired-end libraries.  
 `readDir`: Path to the folder containing the FASTQ reads  
+`keep_trimmed_reads`: Retain trimmed/merged reads in fastq format (True or False)  
 `picard_java`: String of Java options for Picard  
 `gatk_java`: String of Java options for GATK  
 `java11_options`: String of Java options for Java 11 (needed for DamageProfiler)  
