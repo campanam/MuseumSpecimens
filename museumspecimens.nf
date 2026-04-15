@@ -300,13 +300,19 @@ process calculateStatistics {
 
 	// Calculate alignment statistics, depth, and coverage statistics using SAMtools
 	
-	publishDir "$params.outdir/05_AlignmentStatistics", mode: 'copy'
+	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.stats.txt"
+	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.depth.txt"
+	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.coverage.txt"
+	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.stats.txt"
+	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.depth.txt"
+	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.coverage.txt"
 	
 	input:
 	path(trimbam)
+	val extension
 	
 	output:
-	path("${trimbam.simpleName}.*.txt")
+	path "${mrkdupbam.simpleName}.${extension}.*.txt"
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
@@ -318,11 +324,37 @@ process calculateStatistics {
 
 }
 
+process filterMapQ {
+
+	// Filter by minimum MapQ
+	
+	publishDir "$params.outdir/06_MapQBAMs", mode: 'copy'
+	
+	input:
+	path mrkdupbam
+	val mapq
+	
+	output:
+	path "${mrkdupbam.simpleName}.mapq.bam"
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
+	if (mapq < 1)
+		"""
+		ln -s ${mrkdupbam} ${mrkdupbam.simpleName}.mapq.bam
+		"""
+	else
+		"""
+		samtools view -q $mapq -b -o ${mrkdupbam.simpleName}.mapq.bam $mrkdupbam
+		"""
+	
+}
+
 process calculateRxy {
 
 	// Calculate Rxy statistics for each individual
 	
-	publishDir "$params.outdir/06_Rxy", mode: 'copy'
+	publishDir "$params.outdir/08_Rxy", mode: 'copy'
 	
 	input:
 	path(trimbam)
@@ -346,7 +378,7 @@ process calculateRxy {
 process kmerSex {
 
 	// Estimate sex assignment using kmers
-	publishDir "$params.outdir/07_KmerSex", mode: 'copy'
+	publishDir "$params.outdir/09_KmerSex", mode: 'copy'
 	
 	input:
 	tuple val(sample), val(library), path(reads), val(rg)
@@ -378,7 +410,7 @@ process extractUnalignedReads {
 	// Extract unaligned reads in FASTA format for BLAST analysis
 	// Remove duplicates using CD-HIT-EST
 
-	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
+	publishDir "$params.outdir/10_BLASTMetagenome", mode: 'copy'
 
 	input:
 	path finalbam
@@ -402,7 +434,7 @@ process blastUnalignedReads {
 
 	// Blast collapsed unaligned reads against NT
 
-	publishDir "$params.outdir/08_BLASTMetagenome", mode: 'copy'
+	publishDir "$params.outdir/10_BLASTMetagenome", mode: 'copy'
 
 	input:
 	path uniqreads
@@ -417,6 +449,16 @@ process blastUnalignedReads {
 	blast2rma -i ${uniqreads.simpleName}.xml.gz -f BlastXML -bm BlastN -r ${uniqreads} -o ${uniqreads.simpleName}.rma6
 	"""
 
+}
+
+workflow mapqStats {
+	// Alias of calculateStatistics for MapQ-filtered data
+	take:
+		bam
+	main:
+		calculateStatistics(bam, "mapq")
+	emit:
+		calculateStatistics.out
 }
 
 workflow {
@@ -442,8 +484,11 @@ workflow {
 		realignIndels(alignSeqs.out.bam, alignSeqs.out.sample, params.refseq, prepareRef.out) | markDuplicates 
 		profileDamage(markDuplicates.out, params.refseq, prepareRef.out)
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
-		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini | calculateStatistics
-		if (params.rx) { calculateRxy(trimAncientTermini.out, params.rx_script) }
+		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini 
+		calculateStatistics(trimAncientTermini.out,"markdup")
+		filterMapQ(merge_samples.out, params.mapq)
+		mapqStats(filterMapQ.out)
+		if (params.rx) { calculateRxy(filterMapQ.out, params.rx_script) }
 		if (params.kmerSex) { kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry) }
 		if (params.blast) {
 			extractUnalignedReads(reMarkDuplicates.out)

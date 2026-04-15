@@ -34,6 +34,7 @@ The `nextflow.config` file included with this repository contains a `standard` p
 `java11_options`: String of Java options for Java 11 (needed for DamageProfiler)  
 `markDuplicates`: Choice of "picard", "samtools" or "sambamba" for markDuplicates  
 `aDNA_trimmed_bases`: Number of bases to trim from 5' and 3' termini to account for deamination damage  
+`mapq`: Minimum mapping quality (MapQ) to retain alignment. Set to 0 to bypass this filter  
 `rx`: Run sexing using Rx statistic (True or False)  
 `rx_script`: Path to customized Mittnik et al. 2016 Rx script  
 `kmerSex`: Run sexing using Ymers (True or False)  
