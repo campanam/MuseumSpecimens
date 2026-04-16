@@ -486,7 +486,7 @@ workflow {
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini 
 		calculateStatistics(trimAncientTermini.out,"markdup")
-		filterMapQ(merge_samples.out, params.mapq)
+		filterMapQ(trimAncientTermini.out, params.mapq)
 		mapqStats(filterMapQ.out)
 		if (params.rx) { calculateRxy(filterMapQ.out, params.rx_script) }
 		if (params.kmerSex) { kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry) }
