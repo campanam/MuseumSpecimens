@@ -466,11 +466,11 @@ workflow {
 		prepareRef(params.refseq)
 		if (params.genmap) { genMapIndex(params.refseq, params.gm_tmpdir) | genMapMap }
 		if (params.pelibraries != "NULL") {
-			pe_read_data = Channel.fromPath(params.pelibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), file(params.readDir + row.Read2), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
+			pe_read_data = Channel.fromPath(params.pelibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), file(params.readDir + row.Read2), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.RG + '\\tSM:' + row.Sample + '\\tLB:' + row.Library + '\\tPL:' + row.PL) }
 			trimPEAdapters(pe_read_data)
 		}
 		if (params.selibraries != "NULL") {
-			se_read_data = Channel.fromPath(params.selibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.Library + '\\tSM:' + row.Sample + '\\tLB:ILLUMINA\\tPL:ILLUMINA') }
+			se_read_data = Channel.fromPath(params.selibraries).splitCsv(header:true).map { row -> tuple(row.Sample, row.Library, file(params.readDir + row.Read1), row.Adapter1, row.Adapter2, '@RG\\tID:' + row.RG + '\\tSM:' + row.Sample + '\\tLB:' + row.Library + '\\tPL:' + row.PL') }
 			trimSEAdapters(se_read_data)
 		}
 		if (params.pelibraries != "NULL" && params.selibraries != "NULL") {
@@ -486,7 +486,7 @@ workflow {
 		mergeLibraries(markDuplicates.out.groupTuple(by: 1)) // Need unique samples matched with their file paths
 		reRealignIndels(mergeLibraries.out, params.refseq, prepareRef.out) | reMarkDuplicates | trimAncientTermini 
 		calculateStatistics(trimAncientTermini.out,"markdup")
-		filterMapQ(merge_samples.out, params.mapq)
+		filterMapQ(trimAncientTermini.out, params.mapq)
 		mapqStats(filterMapQ.out)
 		if (params.rx) { calculateRxy(filterMapQ.out, params.rx_script) }
 		if (params.kmerSex) { kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry) }

@@ -48,12 +48,12 @@ The `nextflow.config` file included with this repository contains a `standard` p
 The pipeline expects one or two CSV files listing sample and individual library names, read files, and adapter sequences. Should your data only include one type of data (paired-end or single-end), provide the corresponding path to the library CSV for that type of data and set the other parameter to "NULL".  
 
 For paired-end reads, the CSV file requires the following header:  
-`Sample,Library,Read1,Read2,Adapter1,Adapter2`  
+`Sample,RG,Library,PL,Read1,Read2,Adapter1,Adapter2`  
 
 For single-end reads, the CSV requires the following header:  
-`Sample,Library,Read1,Adapter1,Adapter2`  
+`Sample,RG,Library,PL,Read1,Adapter1,Adapter2`  
 
-`Sample` is the name of the sample, while `Library` is in the individual library identification (in case a sample was sequenced more than once). `Read1` and `Read2` give the forward and reverse read file names. `Adapter1` and `Adapter2` are the complete library adapter sequences.  
+`Sample` is the name of the sample. `RG` is the unique read-group identification for each set of sequence reads for an individual. `Library` is in the individual library identification (in case a library was sequenced more than once). `PL` is the platform identifier (ILLUMINA, SOLID, LS454, HELICOS or PACBIO). `Read1` and `Read2` give the forward and reverse read file names. `Adapter1` and `Adapter2` are the complete library adapter sequences.  
 
 ## Executing the Pipeline  
 Execute the pipeline using the following command:  
