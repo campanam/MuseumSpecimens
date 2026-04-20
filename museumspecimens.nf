@@ -312,7 +312,7 @@ process calculateStatistics {
 	val extension
 	
 	output:
-	path "${mrkdupbam.simpleName}.${extension}.*.txt"
+	path "${trimbam.simpleName}.${extension}.*.txt"
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
