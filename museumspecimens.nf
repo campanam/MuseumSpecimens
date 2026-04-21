@@ -312,14 +312,14 @@ process calculateStatistics {
 	val extension
 	
 	output:
-	path "${mrkdupbam.simpleName}.${extension}.*.txt"
+	path "${trimbam.simpleName}.${extension}.*.txt"
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
 	"""
-	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.stats.txt
-	samtools depth -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.depth.txt
-	samtools coverage $trimbam > ${trimbam.simpleName}.coverage.txt
+	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.${extension}.stats.txt
+	samtools depth -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.${extension}.depth.txt
+	samtools coverage $trimbam > ${trimbam.simpleName}.${extension}.coverage.txt
 	"""
 
 }
