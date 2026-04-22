@@ -301,10 +301,10 @@ process calculateStatistics {
 	// Calculate alignment statistics, depth, and coverage statistics using SAMtools
 	
 	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.stats.txt"
-	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.depth.txt"
+	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.depth.txt.gz"
 	publishDir "$params.outdir/05_MergedStats", mode: 'copy', pattern: "*.markdup.coverage.txt"
 	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.stats.txt"
-	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.depth.txt"
+	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.depth.txt.gz"
 	publishDir "$params.outdir/07_MapQStats", mode: 'copy', pattern: "*.mapq.coverage.txt"
 	
 	input:
@@ -312,13 +312,13 @@ process calculateStatistics {
 	val extension
 	
 	output:
-	path "${trimbam.simpleName}.${extension}.*.txt"
+	path "${trimbam.simpleName}.${extension}.*.txt*"
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
 	"""
 	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.${extension}.stats.txt
-	samtools depth -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.${extension}.depth.txt
+	samtools depth -@ ${samtools_extra_threads} $trimbam | gzip > ${trimbam.simpleName}.${extension}.depth.txt.gz
 	samtools coverage $trimbam > ${trimbam.simpleName}.${extension}.coverage.txt
 	"""
 
