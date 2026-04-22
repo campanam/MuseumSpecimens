@@ -191,14 +191,14 @@ process profileDamage {
 	path "${mrkdupbam.simpleName}_damage/*pdf"
 	path "${mrkdupbam.simpleName}_damage/*txt"
 	path "${mrkdupbam.simpleName}_damage/*log"
-	path "${trimbam.simpleName}.markdup.*.txt*"
+	path "${mrkdupbam.simpleName}.markdup.*.txt*"
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
 	"""
-	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.markdup.stats.txt
-	samtools depth -@ ${samtools_extra_threads} $trimbam | gzip > ${trimbam.simpleName}.markdup.depth.txt.gz
-	samtools coverage $trimbam > ${trimbam.simpleName}.markdup.coverage.txt
+	samtools flagstat -@ ${samtools_extra_threads} $mrkdupbam > ${mrkdupbam.simpleName}.markdup.stats.txt
+	samtools depth -@ ${samtools_extra_threads} $mrkdupbam| gzip > ${mrkdupbam.simpleName}.markdup.depth.txt.gz
+	samtools coverage $mrkdupbam > ${mrkdupbam.simpleName}.markdup.coverage.txt
 	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${refseq}
 	"""
 
