@@ -237,7 +237,7 @@ process reRealignIndels {
 	// GATK RealignerTargetCreator. Index bam with picard.
 		
 	input:
-	tuple path(rg_bam, bams)
+	tuple path(rg_bam), val(bams)
 	path refseq
 	path "*"
 	
