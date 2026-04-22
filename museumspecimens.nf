@@ -202,7 +202,7 @@ process mergeLibraries {
 	tuple path(bam), val(sample)
 	
 	output:
-	path "${sample}_merged.bam"
+	tuple path("${sample}_merged.bam"), val(bams)
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
@@ -227,15 +227,19 @@ process reRealignIndels {
 	// GATK RealignerTargetCreator. Index bam with picard.
 		
 	input:
-	path rg_bam
+	tuple path(rg_bam, bams)
 	path refseq
 	path "*"
 	
 	output:
-	path("${rg_bam.simpleName}.realn.bam")
+	tuple path("${rg_bam.simpleName}.realn.bam"), val(bams)
 	
 	script:
-	if ( params.csi )
+	if (bams == 1) // Skip realignment
+		"""
+		ln -s $rg_bam ${rg_bam.simpleName}.realn.bam
+		"""
+	else if ( params.csi )
 		"""
 		samtools index -c ${rg_bam}
 		$gatk LeftAlignIndels -R ${refseq} -I $rg_bam -O ${rg_bam.simpleName}.realn.bam --create-output-bam-index false
@@ -255,14 +259,18 @@ process reMarkDuplicates {
 	publishDir  "$params.outdir/03_MergedBAMs", mode: 'copy'
 	
 	input:
-	path(sorted_bam)
+	tuple path(sorted_bam), val(bams)
 	
 	output:
 	path("${sorted_bam.simpleName}.markdup.bam")
 	
 	script:
 	samtools_extra_threads = task.cpus - 1
-	if ( params.markDuplicates == "sambamba" )
+	if (bams == 1) // Skip realignment
+		"""
+		ln -s $sorted_bam ${sorted_bam.simpleName}.realn.bam
+		"""
+	else if ( params.markDuplicates == "sambamba" )
 		"""
 		sambamba markdup ${sorted_bam} ${sorted_bam.simpleName}.markdup.bam
 		"""
