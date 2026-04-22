@@ -175,9 +175,12 @@ process markDuplicates {
 
 process profileDamage {
 
-	// Profile deamination damage for ancient libraries
+	// Profile deamination damage for ancient libraries and calculate individual library statistics
 	
-	publishDir "$params.outdir/02_DamageProfiles", mode: 'copy', pattern: "*_damage/*.*"
+	publishDir "$params.outdir/02_LibraryStatistics_DamageProfiles", mode: 'copy', pattern: "*_damage/*.*"
+	publishDir "$params.outdir/02_LibraryStatistics_DamageProfiles", mode: 'copy', pattern: "*.markdup.stats.txt"
+	publishDir "$params.outdir/02_LibraryStatistics_DamageProfiles", mode: 'copy', pattern: "*.markdup.depth.txt.gz"
+	publishDir "$params.outdir/02_LibraryStatistics_DamageProfiles", mode: 'copy', pattern: "*.markdup.coverage.txt"
 	
 	input:
 	tuple path(mrkdupbam), val(sample)
@@ -187,8 +190,15 @@ process profileDamage {
 	output:
 	path "${mrkdupbam.simpleName}_damage/*pdf"
 	path "${mrkdupbam.simpleName}_damage/*txt"
-	path "${mrkdupbam.simpleName}_damage/*log"	
+	path "${mrkdupbam.simpleName}_damage/*log"
+	path "${trimbam.simpleName}.markdup.*.txt*"
+	
+	script:
+	samtools_extra_threads = task.cpus - 1
 	"""
+	samtools flagstat -@ ${samtools_extra_threads} $trimbam > ${trimbam.simpleName}.markdup.stats.txt
+	samtools depth -@ ${samtools_extra_threads} $trimbam | gzip > ${trimbam.simpleName}.markdup.depth.txt.gz
+	samtools coverage $trimbam > ${trimbam.simpleName}.markdup.coverage.txt
 	damageprofiler ${params.java11_options} -i ${mrkdupbam} -o ${mrkdupbam.simpleName}_damage -r ${refseq}
 	"""
 
