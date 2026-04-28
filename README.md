@@ -8,6 +8,7 @@ This Nextflow [1] pipeline automates the alignment of Illumina sequencing reads 
 
 ## Citation  
 <img align="left" src="Lion_Project.png" width="200">  
+
 Please cite: Armstrong, E.E., Curry, C., Solari, K.A., Morgan, S.M., Patterson, B.D., Agwanda, B., Parker, L.D., McInerney, N., Helgen, L.E., Helgen, K.M., Packer, C., Petrov, D.A., Hadly, E.A., Maldonado, J.E., Fleischer, R.C., Campana, M.G. 2025. President Roosevelt’s lions reveal a century of population fragmentation in Africa’s largest carnivore. *bioRxiv*. DOI: [10.1101/2025.02.26.640359](https://doi.org/10.1101/2025.02.26.640359).  
 
 ## License  
