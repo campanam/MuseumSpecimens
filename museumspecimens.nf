@@ -508,7 +508,7 @@ workflow {
 			filterMapQ(trimAncientTermini.out, params.mapq)
 			mapqStats(filterMapQ.out)
 		}
-		if (params.rx) { calculateRxy(filterMapQ.out, params.rx_script) }
+		if (params.rx) { calculateRxy(trimAncientTermini.out, params.rx_script) }
 		if (params.kmerSex) { kmerSex(all_reads.groupTuple(by: 0), params.kmers, params.refseq, prepareRef.out, params.sry) }
 		if (params.blast) {
 			extractUnalignedReads(reMarkDuplicates.out)
